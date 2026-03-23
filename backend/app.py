@@ -7,11 +7,8 @@ from tensorflow.keras.models import load_model  # type: ignore
 from rapidfuzz import process, fuzz
 from flask import Flask, render_template
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+app = Flask(__name__)
 
 # =========================================================
 # PATH SETUP

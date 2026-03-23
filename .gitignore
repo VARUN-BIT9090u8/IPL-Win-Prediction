@@ -1,0 +1,14 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# ML / Data (adjust if needed)
+dataset/
+model/
+ml_model/
+score_model/
+
+# OS
+.DS_Store
+Thumbs.db

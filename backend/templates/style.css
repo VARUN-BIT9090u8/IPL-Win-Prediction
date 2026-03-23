@@ -1,0 +1,986 @@
+    *{
+      box-sizing: border-box;
+      font-family: 'Times New Roman', Times, serif;
+      margin: 2;
+      padding: 0;
+    }
+    html, body{
+      height:100%;
+      margin:0;
+    }
+
+    .page-wrapper{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    main{
+      flex:1;
+    }
+
+    body{
+      margin: 0;
+      background-color: black;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    a:hover {
+      text-decoration:none;
+    }
+    
+    button {
+      cursor: pointer;
+    }
+
+    /* Container and layout */
+    .container {
+      max-width: 1200px;
+      width: 95%;
+      margin: 20px auto;
+    }
+
+    /* Navbar */
+    nav {
+      background-color:transparent;
+      font: 1em sans-serif;
+      padding: 10px 20px;
+      margin: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #222;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav .logo {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: bold;
+      font-size: 1.3rem;
+      color: #03a9f4;
+      border-radius: 100%;
+    }
+    nav .logo span {
+      color: #00bcd4;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+    }
+    nav ul li a {
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      color: #ddd;
+    }
+    nav ul li a.active,
+    nav ul li a:hover {
+      color: #03a9f4;
+    }
+    #home header {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      padding: 0 20px;
+      padding-bottom: 100px;
+      position: relative;
+      z-index: 1;
+      
+    }
+    #home header h1 {
+      padding-top: 80px;
+      position: relative;
+      color: #ffffff;
+      font-size: 3rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 900;
+      margin-bottom: 15px; 
+      z-index: 3;
+      
+      
+    }
+    #home header p {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #ffffff;
+      z-index: 2;
+      
+    }
+    #home header .btn-group {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    #home header .btn-group button {
+      background-color: #00aeff;
+      border: none;
+      padding: 12px 30px;
+      font-weight: bold;
+      border-radius: 3px;
+      color: #fff;
+      transition: background-color 0.3s ease;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+    #home header .btn-group button:hover {
+      background-color: #121c24;
+      transform: translateY(-3px) scale(1.05); /* Lift and scale on hover */
+      box-shadow: 0 6px 20px rgba(0, 169, 255, 0.6);
+
+    }
+    #features {
+      padding-top: 15px;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background-color: #171717;
+      border-radius: 8px;
+      padding: 30px 25px;
+      text-align: center;
+      box-shadow: 0 0 10px rgb(0 0 0 / 0.9);
+      transition: box-shadow 0.3s;
+      cursor: default;
+    }
+    .feature-card:hover {
+      box-shadow: 0 0 25px #03a9f4, 0 0 35px #00bcd4;
+      transform: translateY(-8px) scale(1.03); 
+      background-color: #1e1e1e;
+    }
+    .feature-card .icon {
+      font-size: 40px;
+      margin-bottom: 18px;
+      color: #03a9f4;
+    }
+    .feature-card:hover .icon {
+      transform: scale(1.1);
+    }
+
+    .feature-card.orange .icon,
+    .feature-card.orange h3 {
+      color: #0099ff;
+    }
+    .feature-card h3 {
+      color: white;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      letter-spacing: 0.07em;
+    }
+    .feature-card p {
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: #ccc;
+      line-height: 1.3rem;
+    }
+    .winner-card, .score-card, .glass-card, .leader-card, .team-info-card, .player-card, .section, .section1,.panel {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .winner-card:hover, .score-card:hover, .glass-card:hover, .leader-card:hover, .player-card:hover, .section:hover, .section1:hover ,.panel:hover{
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px rgba(3, 169, 244, 0.4); /* Blue glow on hover for interactive cards */
+    }
+
+    .winner-card{
+    background: linear-gradient(145deg,#0b1c2e,#0e2742);
+    border:1px solid #1e4c7a;
+    border-radius:12px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 0 25px rgba(0,0,0,0.6);
+    margin-top:20px;
+  }
+
+      .winner-title{
+        color:#00c3ff;
+        font-size:14px;
+        letter-spacing:2px;
+        font-weight:700;
+        margin-bottom:10px;
+      }
+
+      .winner-name{
+        font-size:32px;
+        font-weight:900;
+        color:#ffffff;
+        margin-bottom:15px;
+      }
+
+      /* probability row */
+      .prob-row{
+        display:flex;
+        justify-content:space-between;
+        margin:20px 0;
+        padding:0 40px;
+        font-size:15px;
+        color:#cde6ff;
+      }
+
+      .prob-row b{
+        font-size:18px;
+        color:#00c3ff;
+      }
+
+      /* confidence */
+      .confidence{
+        margin-top:10px;
+        font-size:16px;
+        color:#ff9c2b;
+        font-weight:700;
+      }
+
+      /* key factors */
+      .factors{
+        margin-top:15px;
+        font-size:14px;
+        color:#a9c9e8;
+        line-height:1.7;
+      }
+
+      /* =========================
+      SCORE CARD
+      =========================*/
+    .score-card{
+      backdrop-filter: blur(18px);
+      border:1px solid rgba(50, 255, 228, 0.4);
+      border-radius:16px;
+      padding:30px;
+      text-align:center;
+      margin-top:25px;
+    }
+
+    .score-big{
+      font-size:48px;
+      font-weight:900;
+      color:#ff9c2b;
+    }
+
+    .score-meta{
+      display:flex;
+      justify-content:space-around;
+      margin-top:20px;
+      color:#ccc;
+    }
+
+      /* ===== GLASS CARD ===== */
+    .glass-card{
+      backdrop-filter: blur(18px);
+      border:1px solid rgba(0,180,255,0.25);
+      border-radius:16px;
+      padding:30px;
+      margin-top:25px;
+      box-shadow:0 0 40px rgba(0,0,0,0.7);
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* gradient glow */
+    .glass-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+     opacity:.4;
+      pointer-events:none;
+    }
+
+    .pred-title{
+      font-size:12px;
+      letter-spacing:3px;
+      color:#8bd3ff;
+      margin-bottom:10px;
+    }
+
+    .pred-winner{
+      font-size:34px;
+      font-weight:900;
+      color:white;
+      margin-bottom:20px;
+    }
+    .prob-row{
+      display:flex;
+      justify-content:space-between;
+      margin-top:15px;
+      padding:0 30px;
+    }
+
+    .prob-box{
+      width:45%;
+    }
+
+    .prob-team{
+      color:#b0ff8b;
+      font-size:14px;
+      display: inline;
+    }
+
+    .prob-value{
+      font-size:22px;
+      font-weight:800;
+      color:#00c3ff;
+    }
+    .conf-bar{
+      width:100%;
+      height:10px;
+      background:#0b1b2e;
+      border-radius:10px;
+      overflow:hidden;
+      margin-top:15px;
+    }
+
+    .conf-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,#00c3ff,#00ffcc);
+      transition:width 1s ease;
+    }
+
+    #dashboard{
+      max-width:1200px;
+      margin:20px auto;
+      padding:40px 20px;
+    }
+    .dashboard-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:25px;
+    }
+    #dashboard h1{
+      grid-column:1/-1;
+      text-align:center;
+      font-size:2rem;
+      font-weight:900;
+      margin-bottom:1px;
+    }
+
+    .section{
+       border:1px solid #413a3a;
+      border-radius:12px;
+      padding:25px;
+      box-shadow:0 0 15px rgba(0,0,0,0.6);
+      transition:0.3s;
+      margin-top: 10px;
+    }
+    .section1{
+      border:1px solid #413a3a;
+      border-radius:12px;
+      padding:25px;
+      padding-top: 10px;
+      box-shadow:0 0 15px rgba(0,0,0,0.6);
+      transition:0.3s;
+      margin: auto;
+      max-width: 980px;
+      text-align: center;
+      margin-top: 30px;
+    }
+    .section:hover, .section1:hover ,.panel:hover{
+      transform: translateY(-8px);
+      box-shadow: 0 12px 30px rgba(3, 169, 244, 0.3); /* Blue glow on hover */
+    }
+
+    .section h2{
+      display:flex;
+      align-items:center;
+      font-size:1.1rem;
+      font-weight:900;
+      margin-bottom:15px;
+    }
+
+    .section h2 .icon{
+      margin-right:10px;
+      font-size:20px;
+      color:#03a9f4;
+    }
+
+    .section label{
+      font-size:0.85rem;
+      color:#aaa;
+      margin-top:10px;
+      display:block;
+    }
+
+    .section select,
+    .section input{
+      width:100%;
+      padding:10px;
+      margin-top:6px;
+      border-radius:6px;
+      border:1px solid #222;
+      background:#0c0c0c;
+      color:white;
+    }
+    .predict-btn{
+      margin-top:15px;
+      background:#0099ff;
+      border:none;
+      padding:12px;
+      width:100%;
+      border-radius:6px;
+      font-weight:bold;
+      color:white;
+      cursor:pointer;
+    }
+
+    .predict-btn:hover{
+      background:#0077cc;
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(0, 153, 255, 0.6);
+
+    }
+
+   
+    .result{
+      margin-top:15px;
+      font-weight:bold;
+      font-size:1.1rem;
+    }
+
+    /* =========================
+      RESPONSIVE
+    ========================= */
+
+    /* Tablet */
+    @media(max-width:900px){
+      #dashboard{
+        grid-template-columns:1fr;
+        padding:15px;
+      }
+    }
+
+    /* Mobile */
+    @media(max-width:768px){
+
+      #dashboard{
+        margin:10px;
+        padding:10px;
+      }
+      .dashboard-grid{
+        grid-template-columns:1fr;
+      }
+      .section,.section1{
+        padding:15px;
+      }
+
+      #dashboard h1{
+        font-size:1.5rem;
+      }
+
+      .predict-btn{
+        padding:10px;
+        font-size:0.9rem;
+      }
+      .dashboard-grid{
+        grid-template-columns: 1fr;
+      }
+      .prob-row{
+        flex-direction:column;
+        gap:10px;
+      }
+
+      .winner-name{
+        font-size:22px;
+      }
+
+      .score-big{
+        font-size:34px;
+      }
+      .players-grid{
+        grid-template-columns:1fr;
+        
+      }
+      .players1-grid{
+        grid-template-columns:1fr;
+      }
+
+    } 
+
+    footer {
+      background-color: #121212;
+      text-align: center;
+      color: #666;
+      font-size: 0.8rem;
+      padding: 10px 0;
+      user-select: none;
+      margin-top: auto;
+      width: 100%;
+    }
+    footer  {
+      color: #999;
+    }
+        .icon-target::before {
+      content: '🎯';
+      font-size: 40px;
+    }
+    .icon-chart::before {
+      content: '📈';
+      font-size: 40px;
+    }
+    .icon-user::before {
+      content: '👤';
+      font-size: 40px;
+    }
+    .icon-trophy::before {
+      content: '🏆';
+      font-size: 40px;
+    }
+    .icon-medal::before {
+      content: '🎖️';
+      font-size: 40px;
+    }
+    .icon-analytics::before {
+      content: '📊';
+      font-size: 40px;
+    }
+    .teams-row{
+      display:flex;
+      justify-content:space-between;
+      margin-top:25px;
+      margin-bottom:15px;
+    }
+
+    .team-box{
+      width:45%;
+    }
+
+    .team-box.left{
+      text-align:left;
+    }
+
+    .team-box.right{
+      text-align:right;
+    }
+
+    .team-name{
+      font-size:14px;
+      opacity:.8;
+    }
+
+    .team-prob{
+      font-size:22px;
+      font-weight:700;
+      color:#4dd0ff;
+    }
+
+    /* TEAM INFO CARD */
+    .team-info-card{
+      border-top:1px solid #222;
+      padding-top:15px;
+    }
+
+    .info-row{
+      display:flex;
+      justify-content:space-between;
+      padding:12px 0;
+      border-bottom:1px solid #1a1a1a;
+      font-size:14px;
+      color:#bbb;
+    }
+
+    .info-row b{
+      color:#00c3ff;
+      font-size:16px;
+    }
+
+    /* ===============================
+      IPL WINNERS GRID
+    ================================ */
+
+    .winners-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:18px;
+      margin-top:20px;
+    }
+
+    .winner-card{
+      background:linear-gradient(145deg,#111,#0b1c2e);
+      border:1px solid #222;
+      border-radius:10px;
+      padding:18px;
+      transition:.3s;
+      box-shadow:0 0 12px rgba(0,0,0,0.6);
+    }
+
+    .winner-card:hover{
+      transform: translateY(-8px);
+      border-color: #03a9f4;
+      box-shadow: 0 0 20px rgba(3, 169, 244, 0.4);
+    }
+
+    .winner-year{
+      font-size:12px;
+      color:#777;
+      margin-bottom:6px;
+    }
+
+    .winner-team{
+      font-size:16px;
+      font-weight:800;
+      color:#03a9f4;
+    }
+
+    .runner-team{
+      font-size:13px;
+      color:#aaa;
+      margin-top:4px;
+    }
+
+    .result-text{
+      font-size:12px;
+      color:#ffb347;
+      margin-top:6px;
+    }
+
+/* =========================
+   PANELS
+========================= */
+.panel{
+  border:1px solid #16395c;
+  border-radius:14px;
+  padding:25px;
+  min-width:0;
+  height: 100%
+}
+.panel:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(3, 169, 244, 0.4);
+}
+
+/* titles */
+.panel-title{
+  font-size:28px;
+  font-weight:900;
+  margin-bottom:5px;
+}
+
+.blue{ color:#00c3ff; }
+
+.subtitle{
+  font-size:13px;
+  opacity:.7;
+  margin-bottom:15px;
+}
+
+/* =========================
+   INPUT
+========================= */
+#playerInput{
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #1f3d5c;
+  background:#07121c;
+  color:white;
+}
+
+/* suggestions */
+#suggestions{
+  background:#0b1c2e;
+  border-radius:8px;
+  max-height:160px;
+  overflow-y:auto;
+  margin-top:5px;
+  position:relative;
+  z-index:5;
+  width:100%;
+}
+#suggestions div{
+  padding:8px;
+  cursor:pointer;
+}
+#suggestions div:hover{
+  background:#16395c;
+}
+
+/* =========================
+   PLAYER CARD
+========================= */
+/* player search container */
+.section{
+  min-width:0;
+}
+.player-card{
+  display:flex;
+  gap:25px;
+  padding:25px;
+  border-radius:16px;
+  background:linear-gradient(145deg,#0a1f35,#0e2c4a);
+  box-shadow:0 0 25px rgba(0,0,0,0.6);
+  margin-top:20px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+.avatar{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#00c3ff,#00ffd0);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  font-weight:900;
+  color:#002;
+}
+
+/* stats grid */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+  margin-top:15px;
+}
+.stats-grid div{
+  background:#0b1c2e;
+  padding:10px;
+  border-radius:8px;
+  text-align:center;
+  min-width: 0;
+}
+.stats-grid span{
+  font-size:11px;
+  opacity:.7;
+}
+.stats-grid b{
+  font-size:16px;
+  color:#00c3ff;
+}
+/* charts */
+.chart-row{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+}
+/* =========================
+   MINI CHARTS
+========================= */
+.chart-row{
+  display:flex;
+  gap:15px;
+  width:100%;
+  margin-top:15px;
+}
+
+.chart-box{
+  flex:1;
+  background:#081521;
+  padding:15px;
+  border-radius:10px;
+}
+
+.chart-title{
+  font-size:12px;
+  opacity:.7;
+  margin-bottom:8px;
+}
+
+.bar{
+  height:8px;
+  background:#132b44;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.bar-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#00c3ff,#00ffd0);
+  transition:width 1s ease;
+}
+
+/* =========================
+   RIGHT PANEL
+========================= */
+.panel select,
+.panel input{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  background:#07121c;
+  border:1px solid #1f3d5c;
+  color:white;
+}
+
+.btn{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  background:#0099ff;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+.btn:hover {
+    background: #0077cc;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 153, 255, 0.6);
+}
+
+
+.btn.small{
+  padding:10px;
+  font-size:13px;
+}
+
+.result-box{
+  margin-top:15px;
+  background:#06121c;
+  padding:15px;
+  border-radius:8px;
+  white-space:pre-wrap;
+}
+
+/* =========================
+   PLAYERS GRID FINAL FIX
+========================= */
+
+.players-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:30px;
+  max-width:980px;
+  margin:auto;
+  align-items:start;
+}
+
+/* make panels shrink properly */
+.panel{
+  min-width:0;
+}
+
+/* CRITICAL: prevent overflow */
+.player-card{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+/* when screen small → stack */
+@media (max-width: 768px){
+  .players-grid{
+    grid-template-columns:1fr;
+  }
+}
+.leaders-section{
+  margin-top:40px;
+  padding:30px;
+}
+
+.leaders-title{
+  font-size:22px;
+  margin-bottom:20px;
+  color:#00c3ff;
+}
+
+/* grid */
+.leaders-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:25px;
+}
+
+@media(max-width:900px){
+  .leaders-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* card */
+.leader-card{
+  background:#081726;
+  border:1px solid #16395c;
+  border-radius:14px;
+  padding:20px;
+}
+.leader-item:hover {
+  background: #0d2a45;
+  box-shadow: 0 0 12px #00c3ff55;
+}
+
+/* player row */
+.player-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px;
+  border-radius:10px;
+  transition:.25s;
+}
+
+.player-row:hover{
+  background:#0d2a45;
+  box-shadow:0 0 12px #00c3ff55;
+}
+
+/* left */
+.player-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+/* avatar circle */
+.avatar{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#00c3ff,#00ffd0);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  color:#002;
+}
+
+/* rank badge */
+.rank{
+  font-size:12px;
+  background:#00c3ff;
+  padding:2px 6px;
+  border-radius:6px;
+  color:#000;
+  font-weight:700;
+}
+
+/* name */
+.player-name{
+  font-size:14px;
+}
+
+/* team logo */
+.team-logo{
+  width:22px;
+  height:22px;
+  margin-left:6px;
+}
+
+/* number */
+.player-stat{
+  font-size:18px;
+  font-weight:800;
+  color:#00c3ff;
+}
+

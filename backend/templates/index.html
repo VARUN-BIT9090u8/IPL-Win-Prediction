@@ -4793,7 +4793,7 @@
       function col(data, title, valLabel) {
         if (!data || !Object.keys(data).length)
           return `<div class="rb-col"><div class="rb-col-head">${title}</div><div style="color:var(--muted);font-size:.78rem;padding:4px">No data</div></div>`;
-        const rows = Object.entries(data).slice(0, 10).map(([name, val], i) =>
+        const rows = Object.entries(data).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, val], i) =>
           `<div class="rb-item">
             <span class="rb-rank">${i + 1}</span>
             <span class="rb-name" title="${name}">${name}</span>
@@ -4870,208 +4870,168 @@
       }
 
       /* ════ DREAM TEAM ════ */
-      function updateCompositionCheck() {
-        const wk = parseInt(document.getElementById("dt-wk")?.value) || 0,
-          bat = parseInt(document.getElementById("dt-bat")?.value) || 0,
-          all = parseInt(document.getElementById("dt-all")?.value) || 0,
-          bowl = parseInt(document.getElementById("dt-bowl")?.value) || 0,
-          total = wk + bat + all + bowl;
-        const totalEl = document.getElementById("dt-total"),
-          box = document.getElementById("dt-composition-check");
-        if (totalEl) totalEl.textContent = total;
-        if (box) {
-          const ok = total === 11;
-          box.style.background = ok
-            ? "rgba(57,255,143,.08)"
-            : "rgba(255,84,39,.08)";
-          box.style.border = ok
-            ? "1px solid rgba(57,255,143,.3)"
-            : "1px solid rgba(255,84,39,.3)";
-          box.style.color = ok ? "var(--acc3)" : "var(--acc2)";
-        }
-      }
+     let dtComposition = { wk: 1, bat: 4, all: 2, bowl: 4 };
+
       window.buildDreamTeam = async function () {
-        const ta = document.getElementById("dt-team-a").value,
-          tb = document.getElementById("dt-team-b").value,
-          fmt = document.getElementById("dt-format").value;
-        if (!ta) {
-          toast("Please select Team A");
-          return;
-        }
-        if (!tb) {
-          toast("Please select Team B");
-          return;
-        }
-        if (ta === tb) {
-          toast("Please select two different teams");
-          return;
-        }
-        const wkCount = parseInt(document.getElementById("dt-wk")?.value) || 1,
-          batCount = parseInt(document.getElementById("dt-bat")?.value) || 4,
-          allCount = parseInt(document.getElementById("dt-all")?.value) || 2,
-          bowlCount = parseInt(document.getElementById("dt-bowl")?.value) || 4;
-        if (wkCount + batCount + allCount + bowlCount !== 11) {
-          toast(`Team composition must total 11`);
-          return;
-        }
-        const fieldWrap = document.getElementById("dtFieldWrap"),
-          poolWrap = document.getElementById("dtPoolWrap"),
-          statsCard = document.getElementById("dtTeamStats");
-        fieldWrap.style.display = "block";
-        poolWrap.style.display = "none";
-        statsCard.style.display = "none";
-        document.getElementById("dtField").innerHTML =
-          '<div class="dt-loading"><div class="dt-spinner"></div><span>Analysing player statistics…</span></div>';
-        try {
-          const r = await fetch("/dream-team", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              team_a: ta,
-              team_b: tb,
-              format: fmt,
-              composition: {
-                wk: wkCount,
-                bat: batCount,
-                all: allCount,
-                bowl: bowlCount,
-              },
-            }),
-          });
-          if (!r.ok) throw new Error();
-          const d = await r.json();
-          applyTeamTheme(ta);
-          renderDreamField(d.xi, d.captain, d.vice_captain);
-          renderTeamStats(d, ta, tb);
-          renderPlayerPools(d.team_a_players, d.team_b_players, ta, tb);
-          poolWrap.style.display = "block";
-          statsCard.style.display = "block";
-          toast("Dream XI generated!", "success");
-        } catch (e) {
-          document.getElementById("dtField").innerHTML =
-            '<div style="color:var(--muted);font-size:.84rem;text-align:center;padding:30px">Failed to generate — check backend</div>';
-          toast("Dream Team failed — check backend");
-        }
-      };
-      function getRoleTag(p) {
-        const runs = p.runs || 0,
-          wkts = p.wickets || 0;
-        if (p.is_wk) return ["WK", "role-wk"];
-        if (runs > 500 && wkts > 20) return ["ALL", "role-all"];
-        if (wkts > 20 && (runs < 300 || wkts > runs / 25))
-          return ["BOWL", "role-bowl"];
-        return ["BAT", "role-bat"];
-      }
-      function getInitials(name) {
-        return name
-          .split(" ")
-          .map((w) => w[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase();
-      }
-      function renderDreamField(xi, captain, viceCaptain) {
-        function fc(p) {
-          if (p.is_wk) return "WK";
-          const r = p.runs || 0,
-            w = p.wickets || 0;
-          if (r > 500 && w > 20) return "ALL";
-          if (w > 20 && (r < 300 || w > r / 25)) return "BOWL";
-          return "BAT";
-        }
-        const wk = xi.filter((p) => fc(p) === "WK"),
-          bowlers = xi.filter((p) => fc(p) === "BOWL"),
-          all = xi.filter((p) => fc(p) === "ALL"),
-          batters = xi.filter((p) => fc(p) === "BAT");
-        const rows = [],
-          rowLabels = [];
-        if (bowlers.length) {
-          rows.push(bowlers);
-          rowLabels.push("BOWLERS");
-        }
-        if (all.length) {
-          rows.push(all);
-          rowLabels.push("ALL-ROUNDERS");
-        }
-        if (batters.length > 4) {
-          const mid = Math.ceil(batters.length / 2);
-          rows.push(batters.slice(0, mid));
-          rowLabels.push("BATSMEN");
-          rows.push(batters.slice(mid));
-          rowLabels.push("");
-        } else if (batters.length) {
-          rows.push(batters);
-          rowLabels.push("BATSMEN");
-        }
-        if (wk.length) {
-          rows.push(wk);
-          rowLabels.push("WICKET KEEPER");
-        }
-        const field = document.getElementById("dtField");
-        field.innerHTML = "";
-        rows.forEach((row, ri) => {
-          if (rowLabels[ri]) {
-            const lbl = document.createElement("div");
-            lbl.style.cssText =
-              "text-align:center;font-family:var(--fm);font-size:.52rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;margin-top:6px";
-            lbl.textContent = rowLabels[ri];
-            field.appendChild(lbl);
+          const ta = document.getElementById("dt-team-a").value,
+                tb = document.getElementById("dt-team-b").value,
+                fmt = document.getElementById("dt-format").value;
+
+          if (!ta) { toast("Please select Team A"); return; }
+          if (!tb) { toast("Please select Team B"); return; }
+          if (ta === tb) { toast("Please select two different teams"); return; }
+
+          const wkCount   = parseInt(document.getElementById("dt-wk")?.value)   || 1,
+                batCount  = parseInt(document.getElementById("dt-bat")?.value)   || 4,
+                allCount  = parseInt(document.getElementById("dt-all")?.value)   || 2,
+                bowlCount = parseInt(document.getElementById("dt-bowl")?.value)  || 4;
+
+          if (wkCount + batCount + allCount + bowlCount !== 11) {
+              toast(`Team composition must total 11`); return;
           }
-          const rowEl = document.createElement("div");
-          rowEl.className = "dt-row";
-          row.forEach((p, pi) => {
-            const isCap = p.name === captain,
-              isVC = p.name === viceCaptain,
-              initials = getInitials(p.name),
-              delay = (ri * row.length + pi) * 60,
-              slot = document.createElement("div");
-            slot.className = "dt-slot";
-            slot.style.animationDelay = delay + "ms";
-            slot.innerHTML = `<div class="dt-avatar ${isCap ? "cap" : isVC ? "vc" : ""}" title="${p.name}">${initials}${isCap ? '<div class="dt-badge">C</div>' : isVC ? '<div class="dt-badge" style="background:var(--acc3)">VC</div>' : ""}</div><div class="dt-name">${p.name.split(" ").pop()}</div><div class="dt-role"><span class="pool-role-tag ${getRoleTag(p)[1]}">${getRoleTag(p)[0]}</span></div><div style="font-family:var(--fm);font-size:.5rem;color:var(--muted);margin-top:2px">${p.fantasy_score} pts</div>`;
-            rowEl.appendChild(slot);
+
+          dtComposition = { wk: wkCount, bat: batCount, all: allCount, bowl: bowlCount };
+
+          const fieldWrap = document.getElementById("dtFieldWrap"),
+                poolWrap  = document.getElementById("dtPoolWrap"),
+                statsCard = document.getElementById("dtTeamStats");
+
+          fieldWrap.style.display = "block";
+          poolWrap.style.display  = "none";
+          statsCard.style.display = "none";
+
+          document.getElementById("dtField").innerHTML =
+              '<div class="dt-loading"><div class="dt-spinner"></div><span>Analysing player statistics…</span></div>';
+
+          try {
+              const r = await fetch("/dream-team", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                      team_a: ta,
+                      team_b: tb,
+                      format: fmt,
+                      composition: { wk: wkCount, bat: batCount, all: allCount, bowl: bowlCount },
+                  }),
+              });
+              if (!r.ok) throw new Error();
+              const d = await r.json();
+              applyTeamTheme(ta);
+              renderDreamField(d.xi, d.captain, d.vice_captain);
+              renderTeamStats(d, ta, tb);
+              renderPlayerPools(d.team_a_players, d.team_b_players, ta, tb);
+              poolWrap.style.display  = "block";
+              statsCard.style.display = "block";
+              toast("Dream XI generated!", "success");
+          } catch (e) {
+              document.getElementById("dtField").innerHTML =
+                  '<div style="color:var(--muted);font-size:.84rem;text-align:center;padding:30px">Failed to generate — check backend</div>';
+              toast("Dream Team failed — check backend");
+          }
+      };
+
+      function getRoleTag(p) {
+          const runs = p.runs || 0, wkts = p.wickets || 0;
+          if (p.is_wk) return ["WK", "role-wk"];
+          const hasRuns = runs > 200, hasWkts = wkts > 5;
+          if (hasRuns && hasWkts) return ["ALL", "role-all"];
+          if (hasWkts && !hasRuns) return ["BOWL", "role-bowl"];
+          return ["BAT", "role-bat"];
+      }
+
+      function getInitials(name) {
+          return name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      }
+
+      function renderDreamField(xi, captain, viceCaptain) {
+          function fc(p) {
+              if (p.is_wk) return "WK";
+              const r = p.runs || 0, w = p.wickets || 0;
+              const hasRuns = r > 200, hasWkts = w > 5;
+              if (hasRuns && hasWkts) return "ALL";
+              if (hasWkts && !hasRuns) return "BOWL";
+              return "BAT";
+          }
+
+          const wk      = xi.filter(p => fc(p) === "WK"),
+                bowlers = xi.filter(p => fc(p) === "BOWL"),
+                all     = xi.filter(p => fc(p) === "ALL"),
+                batters = xi.filter(p => fc(p) === "BAT");
+
+          const rows = [], rowLabels = [];
+
+          if (bowlers.length) { rows.push(bowlers); rowLabels.push("BOWLERS"); }
+          if (all.length)     { rows.push(all);     rowLabels.push("ALL-ROUNDERS"); }
+
+          if (batters.length > 4) {
+              const mid = Math.ceil(batters.length / 2);
+              rows.push(batters.slice(0, mid)); rowLabels.push("BATSMEN");
+              rows.push(batters.slice(mid));    rowLabels.push("");
+          } else if (batters.length) {
+              rows.push(batters); rowLabels.push("BATSMEN");
+          }
+
+          if (wk.length) { rows.push(wk); rowLabels.push("WICKET KEEPER"); }
+
+          const field = document.getElementById("dtField");
+          field.innerHTML = "";
+
+          rows.forEach((row, ri) => {
+              if (rowLabels[ri]) {
+                  const lbl = document.createElement("div");
+                  lbl.style.cssText = "text-align:center;font-family:var(--fm);font-size:.52rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;margin-top:6px";
+                  lbl.textContent = rowLabels[ri];
+                  field.appendChild(lbl);
+              }
+              const rowEl = document.createElement("div");
+              rowEl.className = "dt-row";
+              row.forEach((p, pi) => {
+                  const isCap = p.name === captain,
+                        isVC  = p.name === viceCaptain,
+                        initials = getInitials(p.name),
+                        delay = (ri * row.length + pi) * 60,
+                        slot = document.createElement("div");
+                  slot.className = "dt-slot";
+                  slot.style.animationDelay = delay + "ms";
+                  slot.innerHTML = `<div class="dt-avatar ${isCap ? "cap" : isVC ? "vc" : ""}" title="${p.name}">${initials}${isCap ? '<div class="dt-badge">C</div>' : isVC ? '<div class="dt-badge" style="background:var(--acc3)">VC</div>' : ""}</div><div class="dt-name">${p.name.split(" ").pop()}</div><div class="dt-role"><span class="pool-role-tag ${getRoleTag(p)[1]}">${getRoleTag(p)[0]}</span></div><div style="font-family:var(--fm);font-size:.5rem;color:var(--muted);margin-top:2px">${p.fantasy_score} pts</div>`;
+                  rowEl.appendChild(slot);
+              });
+              field.appendChild(rowEl);
           });
-          field.appendChild(rowEl);
-        });
       }
       function renderTeamStats(d, ta, tb) {
-        const grid = document.getElementById("dtStatGrid"),
+    const grid = document.getElementById("dtStatGrid"),
           xi = d.xi;
-        const totalRuns = xi.reduce((s, p) => s + (p.runs || 0), 0),
+    const totalRuns = xi.reduce((s, p) => s + (p.runs || 0), 0),
           totalWkts = xi.reduce((s, p) => s + (p.wickets || 0), 0);
-        const avgSR = (
-            xi.reduce((s, p) => s + (p.sr || 0), 0) / xi.length
-          ).toFixed(1),
-          avgEcon = (
-            xi
-              .filter((p) => p.economy > 0)
-              .reduce((s, p) => s + (p.economy || 0), 0) /
-            Math.max(xi.filter((p) => p.economy > 0).length, 1)
-          ).toFixed(2);
-        const fromA = xi.filter((p) => p.team === ta).length,
-          fromB = xi.filter((p) => p.team === tb).length;
-        grid.innerHTML = `<div class="dt-stat"><div class="dt-stat-val">${totalRuns.toLocaleString()}</div><div class="dt-stat-lbl">Combined Runs</div></div><div class="dt-stat"><div class="dt-stat-val">${totalWkts}</div><div class="dt-stat-lbl">Combined Wkts</div></div><div class="dt-stat"><div class="dt-stat-val" style="color:var(--acc3)">${avgSR}</div><div class="dt-stat-lbl">Avg Strike Rate</div></div><div class="dt-stat"><div class="dt-stat-val" style="color:var(--acc2)">${avgEcon}</div><div class="dt-stat-lbl">Avg Economy</div></div><div class="dt-stat" style="grid-column:1/3"><div class="dt-stat-val" style="font-size:1.1rem">${ta.split(" ").pop()}</div><div class="dt-stat-lbl">${fromA} players selected</div></div><div class="dt-stat" style="grid-column:3/5"><div class="dt-stat-val" style="font-size:1.1rem">${tb.split(" ").pop()}</div><div class="dt-stat-lbl">${fromB} players selected</div></div>`;
-      }
-      function renderPlayerPools(poolA, poolB, ta, tb) {
-        document.getElementById("dtPoolTitleA").textContent = ta;
-        document.getElementById("dtPoolTitleB").textContent = tb;
-        function renderPool(players, containerId) {
-          const el = document.getElementById(containerId);
-          el.innerHTML = "";
-          players.forEach((p, i) => {
+    const avgSR = (xi.reduce((s, p) => s + (p.sr || 0), 0) / xi.length).toFixed(1),
+          avgEcon = (xi.filter(p => p.economy > 0).reduce((s, p) => s + (p.economy || 0), 0) / Math.max(xi.filter(p => p.economy > 0).length, 1)).toFixed(2);
+    const fromA = xi.filter(p => p.team === ta).length,
+          fromB = xi.filter(p => p.team === tb).length;
+    grid.innerHTML = `<div class="dt-stat"><div class="dt-stat-val">${totalRuns.toLocaleString()}</div><div class="dt-stat-lbl">Combined Runs</div></div><div class="dt-stat"><div class="dt-stat-val">${totalWkts}</div><div class="dt-stat-lbl">Combined Wkts</div></div><div class="dt-stat"><div class="dt-stat-val" style="color:var(--acc3)">${avgSR}</div><div class="dt-stat-lbl">Avg Strike Rate</div></div><div class="dt-stat"><div class="dt-stat-val" style="color:var(--acc2)">${avgEcon}</div><div class="dt-stat-lbl">Avg Economy</div></div><div class="dt-stat" style="grid-column:1/3"><div class="dt-stat-val" style="font-size:1.1rem">${ta.split(" ").pop()}</div><div class="dt-stat-lbl">${fromA} players selected</div></div><div class="dt-stat" style="grid-column:3/5"><div class="dt-stat-val" style="font-size:1.1rem">${tb.split(" ").pop()}</div><div class="dt-stat-lbl">${fromB} players selected</div></div>`;
+}
+
+function renderPlayerPools(poolA, poolB, ta, tb) {
+    document.getElementById("dtPoolTitleA").textContent = ta;
+    document.getElementById("dtPoolTitleB").textContent = tb;
+    function renderPool(players, containerId) {
+        const el = document.getElementById(containerId);
+        el.innerHTML = "";
+        players.forEach((p, i) => {
             const [roleLabel, roleClass] = getRoleTag(p),
-              isSelected = p.selected,
-              item = document.createElement("div");
+                  isSelected = p.selected,
+                  item = document.createElement("div");
             item.className = "pool-item";
             item.style.transitionDelay = i * 40 + "ms";
             item.style.opacity = isSelected ? "1" : "0.4";
             item.innerHTML = `<div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:${isSelected ? "linear-gradient(135deg,var(--acc),var(--acc3))" : "rgba(255,255,255,.08)"};display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:${isSelected ? "#000" : "var(--muted)"};">${getInitials(p.name)}</div><span style="font-size:.8rem;${isSelected ? "color:var(--txt);font-weight:600" : "color:var(--muted)"}">${p.name}</span></div><div style="display:flex;align-items:center;gap:6px"><span class="pool-role-tag ${roleClass}">${roleLabel}</span>${isSelected ? '<span style="color:var(--acc3);font-size:.7rem">✓ XI</span>' : ""}</div>`;
             el.appendChild(item);
             setTimeout(() => item.classList.add("in"), 50 * i + 100);
-          });
-        }
-        renderPool(poolA, "dtPoolA");
-        renderPool(poolB, "dtPoolB");
-      }
+        });
+    }
+    renderPool(poolA, "dtPoolA");
+    renderPool(poolB, "dtPoolB");
+}
     </script>
   </body>
 </html>

@@ -3,7 +3,8 @@ import numpy as np
 import pickle
 import pandas as pd
 import os
-from tensorflow.keras.models import load_model  # type: ignore
+import tensorflow as tf
+load_model = tf.keras.models.load_model
 from rapidfuzz import process, fuzz
 from flask import Flask, render_template
 
@@ -130,7 +131,7 @@ PLAYER_LOWER_LIST  = list(PLAYER_LOWER_INDEX.keys())
 # =========================================================
 # LOAD MODELS
 # =========================================================
-model = load_model(MODEL_PATH, compile=False)
+model = load_model(MODEL_PATH, compile=False ,safe_mode=False)
 with open(ENCODER_PATH,  "rb") as f: encoders = pickle.load(f)
 with open(SCALER_PATH,   "rb") as f: scaler   = pickle.load(f)
 
@@ -401,20 +402,26 @@ def top_players(team_code):
         return jsonify({"error": "invalid team"})
     team    = normalize(TEAM_MAP[team_code])
     team_df = DF[(DF["batting_team"] == team) | (DF["bowling_team"] == team)]
-    bat  = (
+    
+    bat = (
         team_df.groupby("batter")["runs_batter"]
-        .sum().sort_values(ascending=False).head(10)
+        .sum()
+        .where(lambda x: x > 0)        # ← filter zero runs
+        .dropna()                        # ← drop zeros
+        .sort_values(ascending=False)
+        .head(10)
     )
     bowl = (
         team_df[team_df["player_out"].notna()]
         .groupby("bowler")["player_out"].count()
-        .sort_values(ascending=False).head(10)
+        .where(lambda x: x > 0)         # ← filter zero wickets
+        .dropna()
+        .sort_values(ascending=False)
+        .head(10)
     )
     return jsonify({"top_batters": bat.to_dict(), "top_bowlers": bowl.to_dict()})
 
-# =========================================================
-# TOP PLAYERS BY SEASON
-# =========================================================
+
 @app.route("/players/top-season/<team_code>/<season>")
 def top_players_season(team_code, season):
     team_code = team_code.upper()
@@ -424,18 +431,25 @@ def top_players_season(team_code, season):
     df   = DF[DF["season"].astype(str) == str(season)].copy()
     if df.empty:
         return jsonify({"message": f"No data found for season {season}"}), 200
-    bat  = (
+    
+    bat = (
         df[df["batting_team"] == team]
         .groupby("batter")["runs_batter"]
-        .sum().sort_values(ascending=False).head(15)
+        .sum()
+        .where(lambda x: x > 0)         # ← filter zero runs
+        .dropna()
+        .sort_values(ascending=False)
+        .head(15)
     )
     bowl = (
         df[(df["bowling_team"] == team) & (df["player_out"].notna())]
         .groupby("bowler")["player_out"].count()
-        .sort_values(ascending=False).head(15)
+        .where(lambda x: x > 0)         # ← filter zero wickets
+        .dropna()
+        .sort_values(ascending=False)
+        .head(15)
     )
     return jsonify({"top_batters": bat.to_dict(), "top_bowlers": bowl.to_dict()})
-
 # =========================================================
 # AUTOSUGGEST — 2-stage optimized search
 # Stage 1 : prefix + substring  (fast, no scoring)
@@ -580,6 +594,7 @@ def season_winners():
 #   All-round: bat_score + bowl_score * 0.7
 #   WK bonus : +50 if player has kept (approximated by bat position)
 # =========================================================
+
 @app.route("/dream-team/test", methods=["GET"])
 def dream_team_test():
     return jsonify({"status": "ok", "message": "POST to /dream-team with team_a, team_b, format"})
@@ -595,7 +610,6 @@ def dream_team():
         team_b = normalize(data["team_b"])
         fmt    = data.get("format", "overall")
 
-        # Filter by season if requested
         df = DF.copy()
         if fmt == "recent":
             seasons = sorted(df["season"].dropna().unique())[-3:]
@@ -617,9 +631,6 @@ def dream_team():
             ovs   = b_bld / 6 if b_bld else 0
             econ  = round(bowl["runs_batter"].sum() / ovs, 2) if ovs else 0
 
-            # Wicket keeper detection
-            # Method: check if player appears as fielder in stumping dismissals
-            # OR check against known IPL wicket keepers list
             KNOWN_WK = {
                 "MS Dhoni", "Rishabh Pant", "KL Rahul", "Sanju Samson",
                 "Dinesh Karthik", "Wriddhiman Saha", "Robin Uthappa",
@@ -632,7 +643,6 @@ def dream_team():
                 "Sam Billings", "Liam Livingstone",
             }
             is_wk = name in KNOWN_WK
-            # Also detect via stumping: if player is listed as fielder in stumpings in dataset
             if not is_wk and "wicket_kind" in df.columns and "fielders" in df.columns:
                 stump_rows = df[df["wicket_kind"] == "stumped"]["fielders"].dropna()
                 stumped_by = set()
@@ -641,7 +651,6 @@ def dream_team():
                 if name in stumped_by:
                     is_wk = True
 
-            # Fantasy score
             bat_score   = runs + (sr / 100) * 200 + sixes * 4 + fours * 2
             bowl_score  = wkts * 30 + max(0, (8 - econ)) * 15 if ovs > 0 else 0
             total_score = bat_score + bowl_score * 0.7 + (50 if is_wk else 0)
@@ -658,26 +667,30 @@ def dream_team():
 
         def top_squad(team):
             bat_df  = df[df["batting_team"] == team]
-            players = (bat_df.groupby("batter")["match_id"]
-                       .nunique().sort_values(ascending=False).head(20).index.tolist())
-            return [get_player_stats(p, team) for p in players]
+            bowl_df = df[df["bowling_team"] == team]
+
+            bat_players  = (bat_df.groupby("batter")["match_id"]
+                            .nunique().sort_values(ascending=False).head(15).index.tolist())
+            bowl_players = (bowl_df[bowl_df["player_out"].notna()]
+                            .groupby("bowler")["match_id"]
+                            .nunique().sort_values(ascending=False).head(10).index.tolist())
+
+            all_names = list(dict.fromkeys(bat_players + bowl_players))
+            return [get_player_stats(p, team) for p in all_names]
+
+        def classify(p):
+            if p["is_wk"]: return "WK"
+            r, w = p["runs"], p["wickets"]
+            has_runs = r > 200
+            has_wkts = w > 5
+            if has_runs and has_wkts: return "ALL"
+            if has_wkts and not has_runs: return "BOWL"
+            return "BAT"
 
         squad_a     = top_squad(team_a)
         squad_b     = top_squad(team_b)
         all_players = squad_a + squad_b
         all_players.sort(key=lambda x: x["fantasy_score"], reverse=True)
-
-        def classify(p):
-            if p["is_wk"]: return "WK"
-            r, w = p["runs"], p["wickets"]
-            sr   = p.get("sr", 0)
-            econ = p.get("economy", 0)
-            # All-rounder: significant contribution in both batting AND bowling
-            if r > 500 and w > 20: return "ALL"
-            # Pure bowler: wickets dominant, low economy, minimal batting
-            if w > 20 and (r < 300 or w > r / 25): return "BOWL"
-            # Default to batter
-            return "BAT" 
 
         xi          = []
         counts      = {"WK": 0, "BAT": 0, "ALL": 0, "BOWL": 0}
@@ -690,12 +703,10 @@ def dream_team():
             "BOWL": int(comp.get("bowl", 4)),
         }
 
-        # ── STEP 1: Force best WK in first (guarantee at least 1) ──
         wk_candidates = sorted(
             [p for p in all_players if p["is_wk"]],
             key=lambda x: x["fantasy_score"], reverse=True
         )
-        # If no WK found in top 20 squads, expand search across full dataset
         if not wk_candidates:
             KNOWN_WK = {
                 "MS Dhoni","Rishabh Pant","KL Rahul","Sanju Samson",
@@ -707,7 +718,6 @@ def dream_team():
                 "Jonny Bairstow","Devon Conway","Tim Seifert",
                 "Sam Billings","Sheldon Jackson",
             }
-            # Check all players in both squads for any known WK
             for p in all_players:
                 if p["name"] in KNOWN_WK:
                     p["is_wk"] = True
@@ -720,10 +730,9 @@ def dream_team():
             counts["WK"] = 1
             team_counts[best_wk["team"]] = team_counts.get(best_wk["team"], 0) + 1
 
-        # ── STEP 2: Fill remaining 10 spots with role constraints ──
         for p in all_players:
             if len(xi) >= 11: break
-            if any(x["name"] == p["name"] for x in xi): continue  # already added
+            if any(x["name"] == p["name"] for x in xi): continue
             role = classify(p)
             tc   = team_counts.get(p["team"], 0)
             if counts[role] < limits[role] and tc < 7:
@@ -732,7 +741,6 @@ def dream_team():
                 p["selected"] = True
                 xi.append(p)
 
-        # ── STEP 3: Fill remaining spots if still < 11 ──
         selected_names = {p["name"] for p in xi}
         for p in all_players:
             if len(xi) >= 11: break
@@ -763,8 +771,6 @@ def dream_team():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
-
 # =========================================================
 # RUN
 # =========================================================
